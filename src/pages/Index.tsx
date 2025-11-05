@@ -26,7 +26,7 @@ const Index = () => {
                 </span>
               </h1>
               <p className="text-xl text-muted-foreground max-w-xl">
-                State-of-the-art compression algorithms that reduce file sizes while maintaining data integrity. 
+                Advanced Golomb coding compression that reduces file sizes while maintaining data integrity. 
                 Fast, secure, and efficient.
               </p>
               <div className="flex gap-4">
@@ -70,7 +70,7 @@ const Index = () => {
               {
                 icon: Zap,
                 title: "Lightning Fast",
-                description: "Compress large files in seconds with optimized algorithms"
+                description: "Compress large files in seconds with optimized Golomb coding"
               },
               {
                 icon: Shield,
@@ -84,8 +84,8 @@ const Index = () => {
               },
               {
                 icon: FileArchive,
-                title: "Multiple Algorithms",
-                description: "Choose from Huffman, LZW, and hybrid compression"
+                title: "Advanced Algorithm",
+                description: "Utilizes efficient Golomb coding for optimal compression"
               }
             ].map((feature, index) => (
               <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
@@ -109,7 +109,7 @@ const Index = () => {
             <CardContent className="p-12 text-center space-y-6">
               <h2 className="text-4xl font-bold">Ready to Get Started?</h2>
               <p className="text-xl opacity-90 max-w-2xl mx-auto">
-                Join thousands of users who trust CompressDB for their data compression needs
+                Join thousands of users who trust our Golomb coding compression for their data needs
               </p>
               <Link to="/register">
                 <Button size="lg" variant="secondary" className="gap-2">
