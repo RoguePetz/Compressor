@@ -12,7 +12,7 @@ import { toast } from "sonner";
 const Compress = () => {
   const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [algorithm, setAlgorithm] = useState("huffman");
+  const [algorithm, setAlgorithm] = useState("golomb");
   const [isCompressing, setIsCompressing] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -55,13 +55,13 @@ const Compress = () => {
         <div className="max-w-3xl mx-auto space-y-8">
           <div>
             <h1 className="text-4xl font-bold">Compress Files</h1>
-            <p className="text-muted-foreground mt-2">Upload and compress your files with advanced algorithms</p>
+            <p className="text-muted-foreground mt-2">Upload and compress your files using Golomb coding</p>
           </div>
 
           <Card>
             <CardHeader>
               <CardTitle>File Upload</CardTitle>
-              <CardDescription>Select a file to compress</CardDescription>
+              <CardDescription>Select a file to compress with Golomb algorithm</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* File Upload Zone */}
@@ -92,27 +92,27 @@ const Compress = () => {
                 </label>
               </div>
 
-              {/* Algorithm Selection */}
+              {/* Algorithm Selection - Only Golomb */}
               <div className="space-y-2">
                 <Label htmlFor="algorithm">Compression Algorithm</Label>
-                <Select value={algorithm} onValueChange={setAlgorithm}>
+                <Select value={algorithm} onValueChange={setAlgorithm} disabled>
                   <SelectTrigger id="algorithm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="huffman">Huffman Coding</SelectItem>
-                    <SelectItem value="lzw">LZW (Lempel-Ziv-Welch)</SelectItem>
-                    <SelectItem value="hybrid">Hybrid Compression</SelectItem>
-                    <SelectItem value="rle">Run-Length Encoding</SelectItem>
+                    <SelectItem value="golomb">Golomb Coding</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">
+                  Golomb coding is the only available algorithm
+                </p>
               </div>
 
               {/* Progress */}
               {isCompressing && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Compressing...</span>
+                    <span className="text-muted-foreground">Compressing with Golomb coding...</span>
                     <span className="font-medium">{progress}%</span>
                   </div>
                   <Progress value={progress} />
@@ -122,16 +122,16 @@ const Compress = () => {
               {/* Action Button */}
               <Button 
                 onClick={handleCompress} 
-                disabled={!selectedFile || isCompressing}
+                disabled={isCompressing}
                 className="w-full gap-2"
                 size="lg"
               >
                 {isCompressing ? (
-                  <>Processing...</>
+                  <>Processing with Golomb...</>
                 ) : (
                   <>
                     <Zap className="h-4 w-4" />
-                    Compress File
+                    Compress with Golomb
                   </>
                 )}
               </Button>
@@ -146,10 +146,11 @@ const Compress = () => {
                   <FileArchive className="h-5 w-5 text-primary" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-semibold">About Compression Algorithms</h3>
+                  <h3 className="font-semibold">About Golomb Coding</h3>
                   <p className="text-sm text-muted-foreground">
-                    Different algorithms work better for different file types. Huffman is excellent for text,
-                    LZW works great for images, and Hybrid combines multiple techniques for optimal results.
+                    Golomb coding is a lossless data compression method using a family of data codes 
+                    to encode non-negative integers. It's particularly effective for data with 
+                    geometric distributions and is widely used in image and video compression.
                   </p>
                 </div>
               </div>
