@@ -6,25 +6,51 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileArchive } from "lucide-react";
 import { toast } from "sonner";
-
+import tokenService from "@/lib/token.service";
+import axios from "axios";
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      toast.success("Login successful!");
-      navigate("/dashboard");
-      setIsLoading(false);
-    }, 1000);
-  };
+    setIsLoading(true);
+    // console.log(formData)
+    try {
+      const response = await axios.post(
+        "https://golomb-file-compressor.onrender.com/login",
+        {
+          email: email,
+          password: password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "ngrok-skip-browser-warning": "69420",
+          },
+        }
+      );
+      
+      const resData=response?.data
+      
+      tokenService.setUser(resData);
+      tokenService.setToken(resData.token);
 
+      localStorage.setItem("token", resData.token);
+      navigate("/dashboard");
+      toast.success("Account created successfully!");
+
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background p-4">
       <Card className="w-full max-w-md">

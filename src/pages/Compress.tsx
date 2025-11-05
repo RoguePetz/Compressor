@@ -5,9 +5,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import Navbar from "@/components/Navbar";
-import { Upload, FileArchive, Zap } from "lucide-react";
+import { Upload, FileArchive, Zap, Download, FileText, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
+import axiosInstance from "@/lib/api";
+
+interface CompressionResult {
+  cols: number;
+  compressed_size_bits: number;
+  compression_ratio: number;
+  file_id: number;
+  filename: string;
+  m: number;
+  message: string;
+  original_size_bits: number;
+  rows: number;
+}
 
 const Compress = () => {
   const navigate = useNavigate();
@@ -15,6 +35,8 @@ const Compress = () => {
   const [algorithm, setAlgorithm] = useState("golomb");
   const [isCompressing, setIsCompressing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [compressionResult, setCompressionResult] = useState<CompressionResult | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -27,24 +49,64 @@ const Compress = () => {
       toast.error("Please select a file first");
       return;
     }
-
+  
     setIsCompressing(true);
     setProgress(0);
-
-    // Simulate compression progress
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            toast.success("File compressed successfully!");
-            navigate("/results/1");
-          }, 500);
-          return 100;
+  
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+  
+    try {
+      const response = await axiosInstance.post(
+        "/compress",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "ngrok-skip-browser-warning": "69420",
+          },
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              setProgress(percentCompleted);
+            }
+          },
         }
-        return prev + 10;
-      });
-    }, 200);
+      );
+  
+      const resData = response?.data;
+      setCompressionResult(resData);
+      setShowResultModal(true);
+      toast.success("File compressed successfully!");
+      console.log("Server response:", resData);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error?.response?.data?.error || "Compression failed");
+    } finally {
+      setIsCompressing(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowResultModal(false);
+    // Optionally navigate to results page or reset the form
+    // navigate("/results/1");
+  };
+
+  const formatFileSize = (bits: number) => {
+    const bytes = bits / 8;
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
+  const getCompressionEfficiency = (ratio: number) => {
+    if (ratio < 0.5) return { text: "Excellent", color: "text-green-600" };
+    if (ratio < 0.8) return { text: "Good", color: "text-blue-600" };
+    if (ratio < 1) return { text: "Moderate", color: "text-yellow-600" };
+    return { text: "No Compression", color: "text-red-600" };
   };
 
   return (
@@ -158,6 +220,103 @@ const Compress = () => {
           </Card>
         </div>
       </div>
+
+      {/* Results Modal */}
+      <Dialog open={showResultModal} onOpenChange={setShowResultModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-green-600" />
+              Compression Successful!
+            </DialogTitle>
+            <DialogDescription>
+              Your file has been compressed using Golomb coding.
+            </DialogDescription>
+          </DialogHeader>
+
+          {compressionResult && (
+            <div className="space-y-4">
+              {/* File Info */}
+              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <FileText className="h-8 w-8 text-blue-600" />
+                <div>
+                  <p className="font-medium text-sm">{compressionResult.filename}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {compressionResult.rows} rows × {compressionResult.cols} columns
+                  </p>
+                </div>
+              </div>
+
+              {/* Compression Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Original Size</p>
+                  <p className="text-lg font-bold">
+                    {formatFileSize(compressionResult.original_size_bits)}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Compressed Size</p>
+                  <p className="text-lg font-bold text-green-600">
+                    {formatFileSize(compressionResult.compressed_size_bits)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Compression Ratio */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm font-medium">Compression Ratio</p>
+                  <span className={`text-sm font-bold ${
+                    getCompressionEfficiency(compressionResult.compression_ratio).color
+                  }`}>
+                    {(compressionResult.compression_ratio * 100).toFixed(1)}%
+                  </span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div 
+                    className="bg-green-600 h-2 rounded-full transition-all duration-500"
+                    style={{ width: `${(1 - compressionResult.compression_ratio) * 100}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Efficiency: {getCompressionEfficiency(compressionResult.compression_ratio).text}
+                </p>
+              </div>
+
+              {/* Additional Info */}
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">Golomb Parameter</p>
+                  <p className="text-sm font-medium">m = {compressionResult.m}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">File ID</p>
+                  <p className="text-sm font-medium">#{compressionResult.file_id}</p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={handleCloseModal}
+                >
+                  Close
+                </Button>
+                {/* <Button 
+                  className="flex-1 gap-2"
+                  onClick={() => navigate(`/results/${compressionResult.file_id}`)}
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  View Details
+                </Button> */}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import tokenService from "@/lib/token.service";
 import { FileArchive } from "lucide-react";
 import { toast } from "sonner";
+import axios from "axios";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -24,15 +26,39 @@ const Register = () => {
       toast.error("Passwords don't match");
       return;
     }
-    
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      toast.success("Account created successfully!");
+    // console.log(formData)
+    try {
+      const response = await axios.post(
+        "https://golomb-file-compressor.onrender.com/signup",
+        {
+          username: formData?.name,
+          email: formData?.email,
+          password: formData?.password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "ngrok-skip-browser-warning": "69420",
+          },
+        }
+      );
+      
+      const resData=response?.data
+      
+      tokenService.setUser(resData);
+      tokenService.setToken(resData.token);
+
+      localStorage.setItem("token", resData.token);
       navigate("/dashboard");
+      toast.success("Account created successfully!");
+
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (

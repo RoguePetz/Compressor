@@ -52,7 +52,7 @@ const Navbar = ({ isAuthenticated = false, onLogout }: NavbarProps) => {
                 <History className="h-4 w-4" />
                 <span className="hidden md:inline">History</span>
               </Link>
-              <Link 
+              {/* <Link 
                 to="/profile" 
                 className={`flex items-center gap-2 transition-colors ${
                   isActive('/profile') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
@@ -60,7 +60,7 @@ const Navbar = ({ isAuthenticated = false, onLogout }: NavbarProps) => {
               >
                 <User className="h-4 w-4" />
                 <span className="hidden md:inline">Profile</span>
-              </Link>
+              </Link> */}
               <Button variant="ghost" size="sm" onClick={onLogout} className="gap-2">
                 <LogOut className="h-4 w-4" />
                 <span className="hidden md:inline">Logout</span>
