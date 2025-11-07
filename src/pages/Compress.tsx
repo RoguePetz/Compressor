@@ -148,7 +148,7 @@ const Compress = () => {
                   ) : (
                     <div>
                       <p className="font-medium">Click to upload or drag and drop</p>
-                      <p className="text-sm text-muted-foreground">Maximum file size: 100MB</p>
+                      {/* <p className="text-sm text-muted-foreground">Maximum file size: 100MB</p> */}
                     </div>
                   )}
                 </label>
